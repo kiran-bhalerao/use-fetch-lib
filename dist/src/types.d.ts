@@ -24,7 +24,7 @@ export interface IUseFetchProps<S> {
     options?: AxiosRequestConfig;
     name?: string;
 }
-export declare type IUseFetchReturn<S extends Record<string, any>, P extends Record<string, any>> = [S | undefined, IStatus, (data?: P) => Promise<void>, string];
+export declare type IUseFetchReturn<S extends Record<string, any>, P extends Record<string, any>> = [S | undefined, IStatus, (data?: P) => void, string];
 export interface IUseFetchContext {
     authorizationToken: string | (() => string);
     useHttpService: Http;

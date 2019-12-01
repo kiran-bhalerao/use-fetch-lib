@@ -1,4 +1,4 @@
-import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 export default class Http {
     private baseUrl;
     constructor(baseUrl: string);

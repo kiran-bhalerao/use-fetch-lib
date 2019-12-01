@@ -12,15 +12,15 @@ class Http {
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
         this.get = (url, token, data, options) => this.fetch(url, token, options);
-        this.post = (url, token, data, options) => this.fetchWithBody('POST', url, token, data, options);
-        this.delete = (url, token, data, options) => this.fetchWithBody('DELETE', url, token, data, options);
-        this.put = (url, token, data, options) => this.fetchWithBody('PUT', url, token, data, options);
+        this.post = (url, token, data, options) => this.fetchWithBody("POST", url, token, data, options);
+        this.delete = (url, token, data, options) => this.fetchWithBody("DELETE", url, token, data, options);
+        this.put = (url, token, data, options) => this.fetchWithBody("PUT", url, token, data, options);
         this.absUrl = (relativePath) => this.baseUrl + relativePath;
         this.getHeaders = (token) => {
             if (token)
                 return {
-                    Authorization: `Bearer ${token}`,
-                    'Access-Control-Allow-Origin': '*'
+                    Authorization: token,
+                    "Access-Control-Allow-Origin": "*"
                 };
             return {};
         };
@@ -51,8 +51,9 @@ const __useFetchContext = () => React.useContext(FetchContext);
 /**
  * Getting started with useFetch, you probably need this one `UseFetchProvider` 🎉
  *  - UseFetchProvider is just a React component that help the `useFetch` to configure it properly.
+ *  - There are only two required params as given below
  *
- * UseFetchProvider Params 😄
+ * UseFetchProvider Params 👇
  * @param  {string} baseUrl - your api host name Ex. https://your-api.com without the last Forward slash
  * @param  {() => string|string} authorizationToken - your client JWT token Ex. `bearer eyJ0eX...`
  *
@@ -100,7 +101,7 @@ const getAccessToken = (authorizationToken) => {
  *  - Your api should always return object
  *  otherwise it will try to convert your api response into object(kinda crazy) 🔴
  *
- * useFetch Params 😄
+ * useFetch Params 👇
  * @param  {string} url - The request URL
  * @param  {('get' | 'delete' | 'post' | 'put')} method - The request method
  * @param  {object} mockData - This is default data for typescript types and api mocking
@@ -117,10 +118,10 @@ const __useFetch = (props) => {
     const { authorizationToken, useHttpService, withProviderAdded } = __useFetchContext();
     // check if UseFetchProvider is added before use of useFetch
     if (!withProviderAdded)
-        throw new Error('You must wrap your higher level component with UseFetchProvider, before using useFetch 😬');
+        throw new Error("You must wrap your higher level(parent) component with UseFetchProvider, before using useFetch 😬");
     let access_token = getAccessToken(authorizationToken);
     // handle undefined params
-    const serviceName = name || 'unknown';
+    const serviceName = name || "unknown";
     const depends = dependencies || [];
     const isMocked = !!mockData;
     const requireAccessToken = shouldUseAuthToken ? access_token : null;
@@ -132,7 +133,7 @@ const __useFetch = (props) => {
             isRejected: false,
             isFulfilled: false,
             isMocked: false,
-            err: ''
+            err: ""
         }
     };
     // create store
@@ -140,6 +141,7 @@ const __useFetch = (props) => {
     // actual service
     const service = (data) => {
         beforeService(beforeServiceCall);
+        // pending state
         setState({
             data: state.data ? Object.assign({}, state.data) : undefined,
             status: {
@@ -147,10 +149,11 @@ const __useFetch = (props) => {
                 isPending: true,
                 isRejected: false,
                 isMocked,
-                err: ''
+                err: ""
             }
         });
-        return useHttpService[method](url, requireAccessToken, data, options)
+        // call service
+        useHttpService[method](url, requireAccessToken, data, options)
             .then(({ data }) => {
             setState({
                 data: Object.assign(Object.assign({}, state.data), data),
@@ -159,7 +162,7 @@ const __useFetch = (props) => {
                     isPending: false,
                     isRejected: false,
                     isMocked: false,
-                    err: ''
+                    err: ""
                 }
             });
         })
@@ -179,15 +182,15 @@ const __useFetch = (props) => {
     // service manager
     React.useEffect(() => {
         if (shouldDispatch) {
-            if (typeof shouldDispatch === 'function' && shouldDispatch()) {
+            if (typeof shouldDispatch === "function" && shouldDispatch()) {
                 service(); // if `shouldDispatch` is a function and it return true
             }
-            else if (typeof shouldDispatch === 'boolean' && shouldDispatch) {
+            else if (typeof shouldDispatch === "boolean" && shouldDispatch) {
                 service(); // if `shouldDispatch` is a boolean and it's value is true
             }
         }
-        else if (typeof shouldDispatch === 'undefined') {
-            if (typeof dependencies !== 'undefined') {
+        else if (typeof shouldDispatch === "undefined") {
+            if (typeof dependencies !== "undefined") {
                 service(); // if `shouldDispatch` is a not given but dependencies has at least one value || not undefiled
             }
         }

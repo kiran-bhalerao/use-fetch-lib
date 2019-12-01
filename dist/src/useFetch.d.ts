@@ -1,11 +1,11 @@
-import { IUseFetchProps, IUseFetchReturn } from './types';
+import { IUseFetchProps, IUseFetchReturn } from "./types";
 /**
  * useFetch Guidelines 🎉
  *  - This is a react custom hook, so make sure it written in functional component
  *  - Your api should always return object
  *  otherwise it will try to convert your api response into object(kinda crazy) 🔴
  *
- * useFetch Params 😄
+ * useFetch Params 👇
  * @param  {string} url - The request URL
  * @param  {('get' | 'delete' | 'post' | 'put')} method - The request method
  * @param  {object} mockData - This is default data for typescript types and api mocking
