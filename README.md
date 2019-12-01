@@ -1,7 +1,7 @@
 # use-fetch-lib 🔥
 
-A simple React Hook that make rest api call easier
-Api calls without Promise or async/ await
+A simple React Hook that make rest api call easier\
+Api calls without ~~Promise~~ or ~~async/ await~~
 
 ## Install
 
