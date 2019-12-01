@@ -1,6 +1,6 @@
 # use-fetch-lib 🔥
 
-A simple React Hook to make rest api call easier
+A simple React Hook that make rest api call easier
 
 ## Install
 
