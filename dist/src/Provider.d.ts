@@ -1,3 +1,4 @@
+/// <reference types="react" />
 import { IUseFetchContext, IUseFetchProvider } from './types';
 export declare const __useFetchContext: () => IUseFetchContext;
 /**
