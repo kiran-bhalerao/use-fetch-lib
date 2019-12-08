@@ -14,6 +14,6 @@ import { IUseFetchProps, IUseFetchReturn } from "./types";
  * @param  {Array<any>} [dependencies] - (optional) This is dependencies array, if any of dependency get update them the service will re-call(on componentDidUpdate, or `[dependencies]` hooks way)
  * @param  {() => void} [beforeServiceCall] - (optional) This function will trigger when the api call trigger
  * @param  {object} [options={}] - (optional) The config options of Axios.js (https://goo.gl/UPLqaK)
- * @param  {string} [serviceName=unknown] - (optional) You could pass name to your service
+ * @param  {string} [serviceName=unknown] - (optional) You can pass name to your service
  */
 export declare const __useFetch: <S extends Record<string, any>, P extends Record<string, any> = any>(props: IUseFetchProps<S>) => IUseFetchReturn<S, P>;
