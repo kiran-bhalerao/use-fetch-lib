@@ -73,7 +73,7 @@ use-fetch-lib exposes two named exports to us,
 | name               | Type          | Default | Required | Description                                                                                                        |
 | ------------------ | ------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
 | url                | string        |         | required | The request URL                                                                                                    |
-| method             | string        |         | required | The request method `'get' | 'delete' | 'post' | 'put'`                                                             |
+| method             | string        |         | required | The request method `'get', 'delete', 'post', 'put'`                                                                |
 | mockData           | {}            |         | optional | This is default data for typescript types and api mocking                                                          |
 | shouldDispatch     | () => boolean | boolean | false    | optional                                                                                                           | The conditions for auto run the service(on `componentDidMount`) |
 | shouldUseAuthToken | boolean       | true    | optional | if it is true it will send your authorizationToken with the request                                                |
