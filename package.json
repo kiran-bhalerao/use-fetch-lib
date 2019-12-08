@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && rollup -c",
-    "publish": "npm run build && npm publish"
+    "build-publish": "npm run build && npm publish"
   },
   "dependencies": {
     "axios": "^0.19.0"
