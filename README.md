@@ -34,23 +34,23 @@ use-fetch-lib exposes two named exports to us,
 - Just wrap your parent component with `UseFetchProvider`
 - pass it, baseUrl(string) and authorizationToken(string|Function)
 
-```
-   <UseFetchProvider
-      baseUrl="http://dummy.restapiexample.com"
-      authorizationToken={useSelector((store: any) => store.token)}
-    >
-      <App />
-    </UseFetchProvider>
+```jsx
+<UseFetchProvider
+  baseUrl="http://dummy.restapiexample.com"
+  authorizationToken={useSelector((store: any) => store.token)}
+>
+  <App />
+</UseFetchProvider>
 ```
 
 2️⃣ useFetch
 
-```
-    const [data, status, recall] = useFetch({
-      url: "/api/v1/employee/1",
-      method: "get",
-      shouldDispatch: true
-    });
+```javascript
+const [data, status, recall] = useFetch({
+  url: "/api/v1/employee/1",
+  method: "get",
+  shouldDispatch: true
+});
 ```
 
 - This will get called on componentDidMount as we pass `shouldDispatch` true
@@ -61,7 +61,7 @@ use-fetch-lib exposes two named exports to us,
 - **Typescript**
   - we can pass generic types to `useFetch`
 
-```
+```javascript
   const [Posts, { isFulfilled }, postTodoService] = useFetch<IPostData, IPostTodo>({
     url: "/posts",
     method: "post"
