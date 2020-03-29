@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Http from "./Http";
 import { __useFetchContext } from "./Provider";
 import {
   IUseFetchInitialState,
@@ -18,6 +19,7 @@ import { beforeService, errorMessage, getAccessToken } from "./utilities";
  * @param  {('get' | 'delete' | 'post' | 'put')} method - The request method
  * @param  {object} mockData - This is default data for typescript types and api mocking
  * @param  {() => boolean | boolean} [shouldDispatch] - (optional) The conditions for auto run the service(on `componentDidMount` or `[]` in hooks way), it partially depend on `dependencies` arg
+ * @param  {boolean} [cancelable] - (optional) Should cancel previous request..
  * @param  {boolean} [shouldUseAuthToken] - (optional, default true) if it is true it will send your authorizationToken with the request.
  * @param  {Array<any>} [dependencies] - (optional) This is dependencies array, if any of dependency get update them the service will re-call(on componentDidUpdate, or `[dependencies]` hooks way)
  * @param  {() => void} [beforeServiceCall] - (optional) This function will trigger when the api call trigger
@@ -35,6 +37,7 @@ export const __useFetch = <
     method,
     mockData,
     shouldDispatch,
+    cancelable = false,
     shouldUseAuthToken = true,
     dependencies,
     beforeServiceCall,
@@ -93,8 +96,13 @@ export const __useFetch = <
       }
     });
 
+    let httpService = useHttpService[method];
+    if (cancelable) {
+      httpService = Http.Cancelable(useHttpService[method]);
+    }
+
     // call service
-    useHttpService[method](url, requireAccessToken, data, options)
+    httpService(url, requireAccessToken, data, options)
       .then(({ data }: any) => {
         setState({
           data: { ...state.data, ...data },

@@ -18,6 +18,7 @@ $ yarn add use-fetch-lib
 - TypeScript ready
 - Support Data Mocking (Fake Api call)
 - SSR support (Backed by Axios.js)
+- Request Cancellation (Most awaited 🔥)
 
 ## How to use
 
@@ -70,14 +71,15 @@ const [data, status, recall] = useFetch({
 
 - useFetch Params 👇
 
-| name               | Type          | Default | Required | Description                                                                                                        |
-| ------------------ | ------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
-| url                | string        |         | required | The request URL                                                                                                    |
-| method             | string        |         | required | The request method `'get', 'delete', 'post', 'put'`                                                                |
-| mockData           | {}            |         | optional | This is default data for typescript types and api mocking                                                          |
-| shouldDispatch     | () => boolean | boolean | false    | optional                                                                                                           | The conditions for auto run the service(on `componentDidMount`) |
-| shouldUseAuthToken | boolean       | true    | optional | if it is true it will send your authorizationToken with the request                                                |
-| dependencies       | Array<any>    | true    | optional | This is dependencies array, if any of dependency get update them the service will re-call(on `componentDidUpdate`) |
-| beforeServiceCall  | () => void    |         | optional | This function will trigger when the api call triggers                                                              |
-| options            | {}            |         | optional | The config options of Axios.js (https://goo.gl/UPLqaK)                                                             |
-| serviceName        | string        | unknown | optional | You can pass name to your service                                                                                  |
+| name               | Type                     | Default | Required | Description                                                                                                        |
+| ------------------ | ------------------------ | ------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| url                | string                   |         | required | The request URL                                                                                                    |
+| method             | string                   |         | required | The request method `'get', 'delete', 'post', 'put'`                                                                |
+| mockData           | {}                       |         | optional | This is default data for typescript types and api mocking                                                          |
+| shouldDispatch     | () => boolean or boolean | false   | optional | The conditions for auto run the service(on `componentDidMount`)                                                    |
+| cancelable         | boolean                  | false   | optional | Should cancel previous request..                                                                                   |
+| shouldUseAuthToken | boolean                  | true    | optional | if it is true it will send your authorizationToken with the request                                                |
+| dependencies       | Array<any>               | true    | optional | This is dependencies array, if any of dependency get update them the service will re-call(on `componentDidUpdate`) |
+| beforeServiceCall  | () => void               |         | optional | This function will trigger when the api call triggers                                                              |
+| options            | {}                       |         | optional | The config options of Axios.js (https://goo.gl/UPLqaK)                                                             |
+| serviceName        | string                   | unknown | optional | You can pass name to your service                                                                                  |

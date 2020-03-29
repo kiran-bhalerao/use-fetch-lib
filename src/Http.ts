@@ -2,14 +2,21 @@ import axios, {
   AxiosError,
   AxiosRequestConfig,
   AxiosResponse,
+  CancelTokenSource,
   Method
 } from "axios";
+import { ICancelable } from "./types";
 
 export default class Http {
+  static Cancelable: <T extends any>(func: Function) => ICancelable<T>;
   constructor(private baseUrl: string) {}
 
-  public get = (url: string, token: string | null, data?: any, options?: any) =>
-    this.fetch(url, token, options);
+  public get = (
+    url: string,
+    token: string | null,
+    _data?: any,
+    options?: any
+  ) => this.fetch(url, token, options);
 
   public post = (
     url: string,
@@ -53,7 +60,10 @@ export default class Http {
     return axios
       .get(this.absUrl(url), {
         ...options,
-        headers: this.getHeaders(token)
+        headers: {
+          ...this.getHeaders(token),
+          ...(typeof options.headers === "object" ? options.headers : {})
+        }
       })
       .then((res: AxiosResponse) => res)
       .catch((err: AxiosError) => {
@@ -73,7 +83,10 @@ export default class Http {
       url: this.absUrl(url),
       data,
       ...options,
-      headers: this.getHeaders(token)
+      headers: {
+        ...this.getHeaders(token),
+        ...(typeof options.headers === "object" ? options.headers : {})
+      }
     })
       .then((res: AxiosResponse) => res)
       .catch((err: AxiosError) => {
@@ -81,3 +94,34 @@ export default class Http {
       });
   };
 }
+
+Http.Cancelable = (function() {
+  let tokenSource: CancelTokenSource;
+
+  return <T extends any>(func: Function): ICancelable<T> => {
+    const originalFunc = func;
+
+    return function() {
+      const _args = [...arguments];
+      if (_args.length > 4) {
+        throw new Error("Wrong Number of arguments, Check Api class");
+      }
+
+      if (tokenSource) {
+        tokenSource.cancel();
+      }
+      tokenSource = axios.CancelToken.source();
+
+      let extra = { cancelToken: tokenSource.token };
+
+      if (_args.length === 4) {
+        extra = { ..._args[3], ...extra };
+      }
+
+      _args[3] = extra;
+
+      //@ts-ignore
+      return originalFunc.apply(this, [..._args]);
+    };
+  };
+})();

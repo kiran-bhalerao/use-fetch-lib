@@ -11,7 +11,7 @@ var axios = _interopDefault(require('axios'));
 class Http {
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
-        this.get = (url, token, data, options) => this.fetch(url, token, options);
+        this.get = (url, token, _data, options) => this.fetch(url, token, options);
         this.post = (url, token, data, options) => this.fetchWithBody("POST", url, token, data, options);
         this.delete = (url, token, data, options) => this.fetchWithBody("DELETE", url, token, data, options);
         this.put = (url, token, data, options) => this.fetchWithBody("PUT", url, token, data, options);
@@ -26,14 +26,14 @@ class Http {
         };
         this.fetch = (url, token, options = {}) => {
             return axios
-                .get(this.absUrl(url), Object.assign(Object.assign({}, options), { headers: this.getHeaders(token) }))
+                .get(this.absUrl(url), Object.assign(Object.assign({}, options), { headers: Object.assign(Object.assign({}, this.getHeaders(token)), (typeof options.headers === "object" ? options.headers : {})) }))
                 .then((res) => res)
                 .catch((err) => {
                 throw err;
             });
         };
         this.fetchWithBody = (method, url, token, data = {}, options = {}) => {
-            return axios(Object.assign(Object.assign({ method, url: this.absUrl(url), data }, options), { headers: this.getHeaders(token) }))
+            return axios(Object.assign(Object.assign({ method, url: this.absUrl(url), data }, options), { headers: Object.assign(Object.assign({}, this.getHeaders(token)), (typeof options.headers === "object" ? options.headers : {})) }))
                 .then((res) => res)
                 .catch((err) => {
                 throw err;
@@ -41,6 +41,29 @@ class Http {
         };
     }
 }
+Http.Cancelable = (function () {
+    let tokenSource;
+    return (func) => {
+        const originalFunc = func;
+        return function () {
+            const _args = [...arguments];
+            if (_args.length > 4) {
+                throw new Error("Wrong Number of arguments, Check Api class");
+            }
+            if (tokenSource) {
+                tokenSource.cancel();
+            }
+            tokenSource = axios.CancelToken.source();
+            let extra = { cancelToken: tokenSource.token };
+            if (_args.length === 4) {
+                extra = Object.assign(Object.assign({}, _args[3]), extra);
+            }
+            _args[3] = extra;
+            //@ts-ignore
+            return originalFunc.apply(this, [..._args]);
+        };
+    };
+})();
 
 const FetchContext = React.createContext({
     authorizationToken: '',
@@ -106,6 +129,7 @@ const getAccessToken = (authorizationToken) => {
  * @param  {('get' | 'delete' | 'post' | 'put')} method - The request method
  * @param  {object} mockData - This is default data for typescript types and api mocking
  * @param  {() => boolean | boolean} [shouldDispatch] - (optional) The conditions for auto run the service(on `componentDidMount` or `[]` in hooks way), it partially depend on `dependencies` arg
+ * @param  {boolean} [cancelable] - (optional) Should cancel previous request..
  * @param  {boolean} [shouldUseAuthToken] - (optional, default true) if it is true it will send your authorizationToken with the request.
  * @param  {Array<any>} [dependencies] - (optional) This is dependencies array, if any of dependency get update them the service will re-call(on componentDidUpdate, or `[dependencies]` hooks way)
  * @param  {() => void} [beforeServiceCall] - (optional) This function will trigger when the api call trigger
@@ -113,7 +137,7 @@ const getAccessToken = (authorizationToken) => {
  * @param  {string} [serviceName=unknown] - (optional) You can pass name to your service
  */
 const __useFetch = (props) => {
-    const { url, method, mockData, shouldDispatch, shouldUseAuthToken = true, dependencies, beforeServiceCall, options, name } = props;
+    const { url, method, mockData, shouldDispatch, cancelable = false, shouldUseAuthToken = true, dependencies, beforeServiceCall, options, name } = props;
     // get access token from UseFetch Context
     const { authorizationToken, useHttpService, withProviderAdded } = __useFetchContext();
     // check if UseFetchProvider is added before use of useFetch
@@ -152,8 +176,12 @@ const __useFetch = (props) => {
                 err: ""
             }
         });
+        let httpService = useHttpService[method];
+        if (cancelable) {
+            httpService = Http.Cancelable(useHttpService[method]);
+        }
         // call service
-        useHttpService[method](url, requireAccessToken, data, options)
+        httpService(url, requireAccessToken, data, options)
             .then(({ data }) => {
             setState({
                 data: Object.assign(Object.assign({}, state.data), data),

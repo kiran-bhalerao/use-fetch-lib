@@ -1,7 +1,7 @@
-import { AxiosRequestConfig } from 'axios';
-import { ReactNode } from 'react';
-import Http from './Http';
-declare type Method = 'get' | 'delete' | 'post' | 'put';
+import { AxiosRequestConfig, AxiosResponse } from "axios";
+import { ReactNode } from "react";
+import Http from "./Http";
+declare type Method = "get" | "delete" | "post" | "put";
 declare type IStatus = {
     isPending: boolean;
     isRejected: boolean;
@@ -17,6 +17,7 @@ export interface IUseFetchProps<S> {
     url: string;
     method: Method;
     shouldDispatch?: boolean | (() => boolean);
+    cancelable?: boolean;
     dependencies?: any[];
     mockData?: S;
     shouldUseAuthToken?: boolean;
@@ -30,8 +31,9 @@ export interface IUseFetchContext {
     useHttpService: Http;
     withProviderAdded: boolean;
 }
-export interface IUseFetchProvider extends Omit<Omit<IUseFetchContext, 'useHttpService'>, 'withProviderAdded'> {
+export interface IUseFetchProvider extends Omit<Omit<IUseFetchContext, "useHttpService">, "withProviderAdded"> {
     baseUrl: string;
     children: ReactNode;
 }
+export declare type ICancelable<T extends any> = (url: string, token: string | null, _data?: any, options?: AxiosRequestConfig) => Promise<AxiosResponse<T>>;
 export {};
