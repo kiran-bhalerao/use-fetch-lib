@@ -16,7 +16,7 @@ export interface IUseFetchInitialState<S> {
 }
 export interface IUseFetchProps<S> {
     url: string;
-    method: Method;
+    method?: Method;
     shouldDispatch?: boolean | (() => boolean);
     cancelable?: boolean;
     cache?: boolean;
@@ -29,7 +29,8 @@ export interface IUseFetchProps<S> {
 }
 export declare type IUseFetchReturn<S extends Record<string, any>, P extends Record<string, any>> = [{
     data: S | undefined;
-}, IStatus, (data?: P) => void, ((cb: (pre: S) => S) => void) | undefined];
+    status: IStatus;
+}, (data?: P) => void, ((cb: (pre: S) => S) => void) | undefined];
 export interface IUseFetchContext {
     authorizationToken: string | (() => string);
     HttpService: Http;

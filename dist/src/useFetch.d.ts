@@ -7,7 +7,7 @@ import { IUseFetchProps, IUseFetchReturn } from "./types";
  *
  * useFetch Params 👇
  * @param  {string} url - The request URL
- * @param  {('get' | 'delete' | 'post' | 'put')} method - The request method
+ * @param  {('get' | 'delete' | 'post' | 'put')} method - (optional, default 'get') The request method
  * @param  {object} mockData - This is default data for typescript types and api mocking
  * @param  {() => boolean | boolean} [shouldDispatch] - (optional) The conditions for auto run the service(on `componentDidMount` or `[]` in hooks way), it partially depend on `dependencies` arg
  * @param  {boolean} [cancelable] - (optional) should cancel previous request..
@@ -18,4 +18,4 @@ import { IUseFetchProps, IUseFetchReturn } from "./types";
  * @param  {object} [options={}] - (optional) The config options of Axios.js (https://goo.gl/UPLqaK)
  * @param @deprecated {string} [serviceName=unknown] - (optional) You can pass name to your service
  */
-export declare const __useFetch: <S extends Record<string, any>, P extends Record<string, any> = any>(props: IUseFetchProps<S>) => IUseFetchReturn<S, P>;
+export declare const __useFetch: <S extends Record<string, any>, P extends Record<string, any> = any>(props: string | IUseFetchProps<S>) => IUseFetchReturn<S, P>;

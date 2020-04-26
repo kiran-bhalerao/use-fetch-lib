@@ -138,7 +138,7 @@ const getAccessToken = (authorizationToken) => {
  *
  * useFetch Params 👇
  * @param  {string} url - The request URL
- * @param  {('get' | 'delete' | 'post' | 'put')} method - The request method
+ * @param  {('get' | 'delete' | 'post' | 'put')} method - (optional, default 'get') The request method
  * @param  {object} mockData - This is default data for typescript types and api mocking
  * @param  {() => boolean | boolean} [shouldDispatch] - (optional) The conditions for auto run the service(on `componentDidMount` or `[]` in hooks way), it partially depend on `dependencies` arg
  * @param  {boolean} [cancelable] - (optional) should cancel previous request..
@@ -150,9 +150,9 @@ const getAccessToken = (authorizationToken) => {
  * @param @deprecated {string} [serviceName=unknown] - (optional) You can pass name to your service
  */
 const __useFetch = (props) => {
-    const { url, method, mockData, shouldDispatch, cancelable = false, cache = false, shouldUseAuthToken = true, dependencies, beforeServiceCall, options } = props;
+    const { url, method = "get", mockData = undefined, shouldDispatch = undefined, cancelable = false, cache = false, shouldUseAuthToken = true, dependencies = undefined, beforeServiceCall = undefined, options = {}, } = typeof props === "string" ? { url: props } : props;
     // get access token from UseFetch Context
-    const { authorizationToken, HttpService, doesProviderAdded, cacheStore, updateCache } = __useFetchContext();
+    const { authorizationToken, HttpService, doesProviderAdded, cacheStore, updateCache, } = __useFetchContext();
     // create http instance
     const httpService = cancelable
         ? Http.Cancelable(HttpService[method])
@@ -175,18 +175,22 @@ const __useFetch = (props) => {
             isFulfilled: false,
             isCached: false,
             isMocked,
-            err: ""
-        }
+            err: "",
+        },
     };
     // create store
     const [state, setState] = React.useState(initialState);
     // cache mutation
     const _updateCache = (cb) => {
-        const updatedData = cb(cacheStore[url]["data"]);
-        updateCache(url, {
-            data: updatedData,
-            status: Object.assign(Object.assign({}, initialState.status), { isCached: true, isMocked: false, isFulfilled: true })
-        });
+        var _a;
+        const preCache = (_a = cacheStore[url]) === null || _a === void 0 ? void 0 : _a["data"];
+        if (preCache) {
+            const updatedData = cb(preCache);
+            updateCache(url, {
+                data: updatedData,
+                status: Object.assign(Object.assign({}, initialState.status), { isCached: true, isMocked: false, isFulfilled: true }),
+            });
+        }
     };
     // actual service
     const service = (data) => {
@@ -201,8 +205,8 @@ const __useFetch = (props) => {
                 isRejected: false,
                 isCached: false,
                 isMocked,
-                err: ""
-            }
+                err: "",
+            },
         });
         // get cache
         if (cacheable) {
@@ -222,8 +226,8 @@ const __useFetch = (props) => {
                     isRejected: false,
                     isMocked: false,
                     isCached: false,
-                    err: ""
-                }
+                    err: "",
+                },
             };
             setState(Object.assign({}, FulfilledState));
             // set cache
@@ -240,8 +244,8 @@ const __useFetch = (props) => {
                     isCached: false,
                     isRejected: true,
                     isMocked,
-                    err: errorMessage(err)
-                }
+                    err: errorMessage(err),
+                },
             });
         });
     };
@@ -262,7 +266,7 @@ const __useFetch = (props) => {
         }
         //eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...depends]);
-    return [state, state.status, service, cacheable ? _updateCache : undefined];
+    return [state, service, cacheable ? _updateCache : undefined];
 };
 
 exports.UseFetchProvider = __UseFetchProvider;

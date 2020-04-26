@@ -92,16 +92,19 @@ export const __useFetch = <
 
   // cache mutation
   const _updateCache = (cb: (pre: S) => S) => {
-    const updatedData = cb(cacheStore[url]["data"]);
-    updateCache(url, {
-      data: updatedData,
-      status: {
-        ...initialState.status,
-        isCached: true,
-        isMocked: false,
-        isFulfilled: true,
-      },
-    });
+    const preCache = cacheStore[url]?.["data"];
+    if (preCache) {
+      const updatedData = cb(preCache);
+      updateCache(url, {
+        data: updatedData,
+        status: {
+          ...initialState.status,
+          isCached: true,
+          isMocked: false,
+          isFulfilled: true,
+        },
+      });
+    }
   };
 
   // actual service
