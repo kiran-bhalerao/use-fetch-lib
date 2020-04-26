@@ -47,23 +47,26 @@ use-fetch-lib exposes two named exports to us,
 2️⃣ useFetch
 
 ```javascript
-const [data, status, recall] = useFetch({
+const [{ data, status }, recall] = useFetch({
   url: "/api/v1/employee/1",
   method: "get",
   shouldDispatch: true
 });
+
+alternate syntax ♦️
+const [{ data, status }, recall] = useFetch("/api/v1/employee/1"); // note: Default value of `shouldDispatch` is false
 ```
 
 - This will get called on componentDidMount as we pass `shouldDispatch` true
-- it returns an array that we destruct as [data, status, recall]
+- it returns an array that we destruct as [{data, status}, recall]
 - `data` is an object return from Your api call
-- `status` active status of your api call, can be destruct as {isFulfilled, isPending, isRejected, isMocked, err}
+- `status` active status of your api call, can be destruct as {isFulfilled, isPending, isRejected, isMocked, isCached, err}
 - `recall` it is a function to recall your api as you want
 - **Typescript**
   - we can pass generic types to `useFetch`
 
 ```javascript
-  const [Posts, { isFulfilled }, postTodoService] = useFetch<IPostData, IPostTodo>({
+  const [{ data: Posts, status: { isFulfilled } }, postTodoService] = useFetch<IPostData, IPostTodo>({
     url: "/posts",
     method: "post"
   });

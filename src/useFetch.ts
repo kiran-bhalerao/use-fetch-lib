@@ -4,7 +4,7 @@ import { __useFetchContext } from "./Provider";
 import {
   IUseFetchInitialState,
   IUseFetchProps,
-  IUseFetchReturn
+  IUseFetchReturn,
 } from "./types";
 import { beforeService, errorMessage, getAccessToken } from "./utilities";
 
@@ -16,44 +16,52 @@ import { beforeService, errorMessage, getAccessToken } from "./utilities";
  *
  * useFetch Params 👇
  * @param  {string} url - The request URL
- * @param  {('get' | 'delete' | 'post' | 'put')} method - The request method
+ * @param  {('get' | 'delete' | 'post' | 'put')} method - (optional, default 'get') The request method
  * @param  {object} mockData - This is default data for typescript types and api mocking
  * @param  {() => boolean | boolean} [shouldDispatch] - (optional) The conditions for auto run the service(on `componentDidMount` or `[]` in hooks way), it partially depend on `dependencies` arg
- * @param  {boolean} [cancelable] - (optional) Should cancel previous request..
+ * @param  {boolean} [cancelable] - (optional) should cancel previous request..
+ * @param  {boolean} [cache] - (optional) should cache your `GET` request or should reuse the cached version of your pre. request. it uses `In Memory Caching`, it does not use any kinda web storage
  * @param  {boolean} [shouldUseAuthToken] - (optional, default true) if it is true it will send your authorizationToken with the request.
  * @param  {Array<any>} [dependencies] - (optional) This is dependencies array, if any of dependency get update them the service will re-call(on componentDidUpdate, or `[dependencies]` hooks way)
  * @param  {() => void} [beforeServiceCall] - (optional) This function will trigger when the api call trigger
  * @param  {object} [options={}] - (optional) The config options of Axios.js (https://goo.gl/UPLqaK)
- * @param  {string} [serviceName=unknown] - (optional) You can pass name to your service
+ * @param @deprecated {string} [serviceName=unknown] - (optional) You can pass name to your service
  */
 export const __useFetch = <
   S extends Record<string, any>,
   P extends Record<string, any> = any
 >(
-  props: IUseFetchProps<S>
+  props: IUseFetchProps<S> | string
 ): IUseFetchReturn<S, P> => {
   const {
     url,
-    method,
-    mockData,
-    shouldDispatch,
+    method = "get",
+    mockData = undefined,
+    shouldDispatch = undefined,
     cancelable = false,
+    cache = false,
     shouldUseAuthToken = true,
-    dependencies,
-    beforeServiceCall,
-    options,
-    name
-  } = props;
+    dependencies = undefined,
+    beforeServiceCall = undefined,
+    options = {},
+  } = typeof props === "string" ? { url: props } : props;
 
   // get access token from UseFetch Context
   const {
     authorizationToken,
-    useHttpService,
-    withProviderAdded
+    HttpService,
+    doesProviderAdded,
+    cacheStore,
+    updateCache,
   } = __useFetchContext();
 
+  // create http instance
+  const httpService = cancelable
+    ? Http.Cancelable(HttpService[method])
+    : HttpService[method];
+
   // check if UseFetchProvider is added before use of useFetch
-  if (!withProviderAdded)
+  if (!doesProviderAdded)
     throw new Error(
       "You must wrap your higher level(parent) component with UseFetchProvider, before using useFetch 😬"
     );
@@ -61,10 +69,10 @@ export const __useFetch = <
   let access_token = getAccessToken(authorizationToken);
 
   // handle undefined params
-  const serviceName = name || "unknown";
   const depends = dependencies || [];
   const isMocked = !!mockData;
   const requireAccessToken = shouldUseAuthToken ? access_token : null;
+  const cacheable = method === "get" && cache;
 
   // initiate state
   const initialState = {
@@ -73,58 +81,96 @@ export const __useFetch = <
       isPending: false,
       isRejected: false,
       isFulfilled: false,
-      isMocked: false,
-      err: ""
-    }
+      isCached: false,
+      isMocked,
+      err: "",
+    },
   };
 
   // create store
   const [state, setState] = useState<IUseFetchInitialState<S>>(initialState);
+
+  // cache mutation
+  const _updateCache = (cb: (pre: S) => S) => {
+    const updatedData = cb(cacheStore[url]["data"]);
+    updateCache(url, {
+      data: updatedData,
+      status: {
+        ...initialState.status,
+        isCached: true,
+        isMocked: false,
+        isFulfilled: true,
+      },
+    });
+  };
 
   // actual service
   const service = (data?: P) => {
     beforeService(beforeServiceCall);
     // pending state
     setState({
-      data: state.data ? { ...state.data } : undefined,
+      data: state.data ? state.data : undefined,
       status: {
         isFulfilled: false,
         isPending: true,
         isRejected: false,
+        isCached: false,
         isMocked,
-        err: ""
-      }
+        err: "",
+      },
     });
 
-    let httpService = useHttpService[method];
-    if (cancelable) {
-      httpService = Http.Cancelable(useHttpService[method]);
+    // get cache
+    if (cacheable) {
+      const CachedState: IUseFetchInitialState<S> = cacheStore[url];
+      if (CachedState) {
+        return setState({
+          ...CachedState,
+          status: {
+            ...CachedState.status,
+            isMocked: false,
+            isFulfilled: true,
+            isCached: true,
+          },
+        });
+      }
     }
 
     // call service
-    httpService(url, requireAccessToken, data, options)
+    httpService?.(url, requireAccessToken, data, options)
       .then(({ data }: any) => {
-        setState({
-          data: { ...state.data, ...data },
+        // Fulfilled state
+        const FulfilledState = {
+          data,
           status: {
             isFulfilled: true,
             isPending: false,
             isRejected: false,
             isMocked: false,
-            err: ""
-          }
-        });
+            isCached: false,
+            err: "",
+          },
+        };
+
+        setState({ ...FulfilledState });
+
+        // set cache
+        if (cacheable) {
+          updateCache(url, FulfilledState);
+        }
       })
       .catch((err: any) => {
+        // Rejected state
         setState({
           data: state.data,
           status: {
             isFulfilled: false,
             isPending: false,
+            isCached: false,
             isRejected: true,
             isMocked,
-            err: errorMessage(err)
-          }
+            err: errorMessage(err),
+          },
         });
       });
   };
@@ -145,5 +191,5 @@ export const __useFetch = <
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...depends]);
 
-  return [state.data, state.status, service, serviceName];
+  return [state, service, cacheable ? _updateCache : undefined];
 };

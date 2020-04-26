@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { IUseFetchContext, IUseFetchProvider } from './types';
+import { IUseFetchContext, IUseFetchProvider } from "./types";
 export declare const __useFetchContext: () => IUseFetchContext;
 /**
  * Getting started with useFetch, you probably need this one `UseFetchProvider` 🎉

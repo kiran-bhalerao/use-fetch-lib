@@ -66,9 +66,11 @@ Http.Cancelable = (function () {
 })();
 
 const FetchContext = React.createContext({
-    authorizationToken: '',
-    useHttpService: new Http(''),
-    withProviderAdded: false
+    authorizationToken: "",
+    HttpService: new Http(""),
+    doesProviderAdded: false,
+    cacheStore: {},
+    updateCache: () => { }
 });
 const __useFetchContext = () => React.useContext(FetchContext);
 /**
@@ -84,9 +86,19 @@ const __useFetchContext = () => React.useContext(FetchContext);
  */
 const __UseFetchProvider = (props) => {
     const { children, baseUrl, authorizationToken } = props;
-    const useHttpService = new Http(baseUrl);
-    const withProviderAdded = true;
-    return (React__default.createElement(FetchContext.Provider, { value: { authorizationToken, useHttpService, withProviderAdded } }, children));
+    const HttpService = new Http(baseUrl);
+    const doesProviderAdded = true;
+    // cache store
+    const [cacheStore, _updateCache] = React.useState({});
+    // cache updater
+    const updateCache = (key, cache) => _updateCache(pre => (Object.assign(Object.assign({}, pre), { [key]: cache })));
+    return (React__default.createElement(FetchContext.Provider, { value: {
+            authorizationToken,
+            HttpService,
+            doesProviderAdded,
+            cacheStore,
+            updateCache
+        } }, children));
 };
 
 const errorMessage = (e) => {
@@ -129,26 +141,31 @@ const getAccessToken = (authorizationToken) => {
  * @param  {('get' | 'delete' | 'post' | 'put')} method - The request method
  * @param  {object} mockData - This is default data for typescript types and api mocking
  * @param  {() => boolean | boolean} [shouldDispatch] - (optional) The conditions for auto run the service(on `componentDidMount` or `[]` in hooks way), it partially depend on `dependencies` arg
- * @param  {boolean} [cancelable] - (optional) Should cancel previous request..
+ * @param  {boolean} [cancelable] - (optional) should cancel previous request..
+ * @param  {boolean} [cache] - (optional) should cache your `GET` request or should reuse the cached version of your pre. request. it uses `In Memory Caching`, it does not use any kinda web storage
  * @param  {boolean} [shouldUseAuthToken] - (optional, default true) if it is true it will send your authorizationToken with the request.
  * @param  {Array<any>} [dependencies] - (optional) This is dependencies array, if any of dependency get update them the service will re-call(on componentDidUpdate, or `[dependencies]` hooks way)
  * @param  {() => void} [beforeServiceCall] - (optional) This function will trigger when the api call trigger
  * @param  {object} [options={}] - (optional) The config options of Axios.js (https://goo.gl/UPLqaK)
- * @param  {string} [serviceName=unknown] - (optional) You can pass name to your service
+ * @param @deprecated {string} [serviceName=unknown] - (optional) You can pass name to your service
  */
 const __useFetch = (props) => {
-    const { url, method, mockData, shouldDispatch, cancelable = false, shouldUseAuthToken = true, dependencies, beforeServiceCall, options, name } = props;
+    const { url, method, mockData, shouldDispatch, cancelable = false, cache = false, shouldUseAuthToken = true, dependencies, beforeServiceCall, options } = props;
     // get access token from UseFetch Context
-    const { authorizationToken, useHttpService, withProviderAdded } = __useFetchContext();
+    const { authorizationToken, HttpService, doesProviderAdded, cacheStore, updateCache } = __useFetchContext();
+    // create http instance
+    const httpService = cancelable
+        ? Http.Cancelable(HttpService[method])
+        : HttpService[method];
     // check if UseFetchProvider is added before use of useFetch
-    if (!withProviderAdded)
+    if (!doesProviderAdded)
         throw new Error("You must wrap your higher level(parent) component with UseFetchProvider, before using useFetch 😬");
     let access_token = getAccessToken(authorizationToken);
     // handle undefined params
-    const serviceName = name || "unknown";
     const depends = dependencies || [];
     const isMocked = !!mockData;
     const requireAccessToken = shouldUseAuthToken ? access_token : null;
+    const cacheable = method === "get" && cache;
     // initiate state
     const initialState = {
         data: mockData,
@@ -156,50 +173,71 @@ const __useFetch = (props) => {
             isPending: false,
             isRejected: false,
             isFulfilled: false,
-            isMocked: false,
+            isCached: false,
+            isMocked,
             err: ""
         }
     };
     // create store
     const [state, setState] = React.useState(initialState);
+    // cache mutation
+    const _updateCache = (cb) => {
+        const updatedData = cb(cacheStore[url]["data"]);
+        updateCache(url, {
+            data: updatedData,
+            status: Object.assign(Object.assign({}, initialState.status), { isCached: true, isMocked: false, isFulfilled: true })
+        });
+    };
     // actual service
     const service = (data) => {
+        var _a;
         beforeService(beforeServiceCall);
         // pending state
         setState({
-            data: state.data ? Object.assign({}, state.data) : undefined,
+            data: state.data ? state.data : undefined,
             status: {
                 isFulfilled: false,
                 isPending: true,
                 isRejected: false,
+                isCached: false,
                 isMocked,
                 err: ""
             }
         });
-        let httpService = useHttpService[method];
-        if (cancelable) {
-            httpService = Http.Cancelable(useHttpService[method]);
+        // get cache
+        if (cacheable) {
+            const CachedState = cacheStore[url];
+            if (CachedState) {
+                return setState(Object.assign(Object.assign({}, CachedState), { status: Object.assign(Object.assign({}, CachedState.status), { isMocked: false, isFulfilled: true, isCached: true }) }));
+            }
         }
         // call service
-        httpService(url, requireAccessToken, data, options)
-            .then(({ data }) => {
-            setState({
-                data: Object.assign(Object.assign({}, state.data), data),
+        (_a = httpService) === null || _a === void 0 ? void 0 : _a(url, requireAccessToken, data, options).then(({ data }) => {
+            // Fulfilled state
+            const FulfilledState = {
+                data,
                 status: {
                     isFulfilled: true,
                     isPending: false,
                     isRejected: false,
                     isMocked: false,
+                    isCached: false,
                     err: ""
                 }
-            });
-        })
-            .catch((err) => {
+            };
+            setState(Object.assign({}, FulfilledState));
+            // set cache
+            if (cacheable) {
+                updateCache(url, FulfilledState);
+            }
+        }).catch((err) => {
+            // Rejected state
             setState({
                 data: state.data,
                 status: {
                     isFulfilled: false,
                     isPending: false,
+                    isCached: false,
                     isRejected: true,
                     isMocked,
                     err: errorMessage(err)
@@ -224,7 +262,7 @@ const __useFetch = (props) => {
         }
         //eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...depends]);
-    return [state.data, state.status, service, serviceName];
+    return [state, state.status, service, cacheable ? _updateCache : undefined];
 };
 
 exports.UseFetchProvider = __UseFetchProvider;

@@ -1,14 +1,16 @@
-import React, { createContext, useContext } from 'react'
-import Http from './Http'
-import { IUseFetchContext, IUseFetchProvider } from './types'
+import React, { createContext, useContext, useState } from "react";
+import Http from "./Http";
+import { IUseFetchContext, IUseFetchProvider } from "./types";
 
 const FetchContext = createContext<IUseFetchContext>({
-  authorizationToken: '',
-  useHttpService: new Http(''),
-  withProviderAdded: false
-})
+  authorizationToken: "",
+  HttpService: new Http(""),
+  doesProviderAdded: false,
+  cacheStore: {},
+  updateCache: () => {}
+});
 
-export const __useFetchContext = () => useContext(FetchContext)
+export const __useFetchContext = () => useContext(FetchContext);
 
 /**
  * Getting started with useFetch, you probably need this one `UseFetchProvider` 🎉
@@ -22,15 +24,28 @@ export const __useFetchContext = () => useContext(FetchContext)
  * Thats it .. 🔥
  */
 export const __UseFetchProvider = (props: IUseFetchProvider) => {
-  const { children, baseUrl, authorizationToken } = props
-  const useHttpService = new Http(baseUrl)
-  const withProviderAdded = true
+  const { children, baseUrl, authorizationToken } = props;
+  const HttpService = new Http(baseUrl);
+  const doesProviderAdded = true;
+
+  // cache store
+  const [cacheStore, _updateCache] = useState<Record<string, any>>({});
+
+  // cache updater
+  const updateCache = (key: string, cache: Record<string, any>) =>
+    _updateCache(pre => ({ ...pre, [key]: cache }));
 
   return (
     <FetchContext.Provider
-      value={{ authorizationToken, useHttpService, withProviderAdded }}
+      value={{
+        authorizationToken,
+        HttpService,
+        doesProviderAdded,
+        cacheStore,
+        updateCache
+      }}
     >
       {children}
     </FetchContext.Provider>
-  )
-}
+  );
+};
