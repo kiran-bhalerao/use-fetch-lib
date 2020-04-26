@@ -17,8 +17,9 @@ $ yarn add use-fetch-lib
 - Simple and Lightweight (gzipped 1.4k)
 - TypeScript ready
 - Support Data Mocking (Fake Api call)
-- SSR support (Backed by Axios.js)
-- Request Cancellation (Most awaited 🔥)
+- SSR support
+- Request Cancellation 🎉
+- Request Caching (In-Memory cache)
 
 ## How to use
 
