@@ -20,6 +20,8 @@ $ yarn add use-fetch-lib
 - SSR support
 - Request Cancellation 🎉
 - Request Caching (In-Memory cache)
+- Local/Cache state mutation (update your data as you want)
+- Auto req. cancellation on component unmount
 
 ## How to use
 
@@ -48,7 +50,7 @@ use-fetch-lib exposes two named exports to us,
 2️⃣ useFetch
 
 ```javascript
-const [{ data, status }, recall] = useFetch({
+const [{ data, status }, recall, updateState] = useFetch({
   url: "/api/v1/employee/1",
   method: "get",
   shouldDispatch: true
@@ -63,22 +65,34 @@ const [{ data, status }, recall] = useFetch("/api/v1/employee/1"); // note: Defa
 - `data` is an object return from Your api call
 - `status` active status of your api call, can be destruct as {isFulfilled, isPending, isRejected, isMocked, isCached, err}
 - `recall` it is a function to recall your api as you want
+- `updateState` is a function to update fetch state locally, it take callback function with preData as its arg.
+  - ex. updateState((preData)=> updatedData)
+- **Cache**
+  - You can cache your api req. by providing `cache: true`
+  ```javascript
+  const [{ data: Posts, status }] = useFetch({
+    url: "/posts",
+    method: "get",
+    cache: true,
+  });
+  ```
 - **Typescript**
+
   - we can pass generic types to `useFetch`
 
-```javascript
-  const [{ data: Posts, status: { isFulfilled } }, postTodoService] = useFetch<IPostData, IPostTodo>({
-    url: "/posts",
-    method: "post"
-  });
-```
+  ```javascript
+    const [{ data: Posts, status: { isFulfilled } }, postTodoService] = useFetch<IPostData, IPostTodo>({
+      url: "/posts",
+      method: "post"
+    });
+  ```
 
 - useFetch Params 👇
 
 | name               | Type                     | Default | Required | Description                                                                                                        |
 | ------------------ | ------------------------ | ------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
 | url                | string                   |         | required | The request URL                                                                                                    |
-| method             | string                   |         | required | The request method `'get', 'delete', 'post', 'put'`                                                                |
+| method             | string                   | get     | optional | The request method `'get', 'delete', 'post', 'put'`                                                                |
 | mockData           | {}                       |         | optional | This is default data for typescript types and api mocking                                                          |
 | shouldDispatch     | () => boolean or boolean | false   | optional | The conditions for auto run the service(on `componentDidMount`)                                                    |
 | cancelable         | boolean                  | false   | optional | Should cancel previous request..                                                                                   |

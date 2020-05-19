@@ -30,11 +30,11 @@ export interface IUseFetchProps<S> {
 export declare type IUseFetchReturn<S extends Record<string, any>, P extends Record<string, any>> = [{
     data: S | undefined;
     status: IStatus;
-}, (data?: P) => void, ((cb: (pre: S) => S) => void) | undefined];
+}, (data?: P) => void, (cb: (pre: S) => S) => void];
 export interface IUseFetchContext {
     authorizationToken: string | (() => string);
     HttpService: Http;
-    doesProviderAdded: boolean;
+    isProviderAdded: boolean;
     cacheStore: Record<string, any>;
     updateCache: (key: string, cache: Record<string, any>) => void;
 }

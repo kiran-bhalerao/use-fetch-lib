@@ -7,12 +7,11 @@ import {
   IUseFetchReturn,
 } from "./types";
 import { beforeService, errorMessage, getAccessToken } from "./utilities";
+import Axios from "axios";
 
 /**
  * useFetch Guidelines 🎉
  *  - This is a react custom hook, so make sure it written in functional component
- *  - Your api should always return object
- *  otherwise it will try to convert your api response into object(kinda crazy) 🔴
  *
  * useFetch Params 👇
  * @param  {string} url - The request URL
@@ -50,7 +49,7 @@ export const __useFetch = <
   const {
     authorizationToken,
     HttpService,
-    doesProviderAdded,
+    isProviderAdded,
     cacheStore,
     updateCache,
   } = __useFetchContext();
@@ -61,7 +60,7 @@ export const __useFetch = <
     : HttpService[method];
 
   // check if UseFetchProvider is added before use of useFetch
-  if (!doesProviderAdded)
+  if (!isProviderAdded)
     throw new Error(
       "You must wrap your higher level(parent) component with UseFetchProvider, before using useFetch 😬"
     );
@@ -73,6 +72,7 @@ export const __useFetch = <
   const isMocked = !!mockData;
   const requireAccessToken = shouldUseAuthToken ? access_token : null;
   const cacheable = method === "get" && cache;
+  let source = Axios.CancelToken.source();
 
   // initiate state
   const initialState = {
@@ -90,18 +90,34 @@ export const __useFetch = <
   // create store
   const [state, setState] = useState<IUseFetchInitialState<S>>(initialState);
 
-  // cache mutation
-  const _updateCache = (cb: (pre: S) => S) => {
-    const preCache = cacheStore[url]?.["data"];
-    if (preCache) {
-      const updatedData = cb(preCache);
+  const _updateCache = (upCache: S) => {
+    if (cacheable) {
       updateCache(url, {
-        data: updatedData,
+        data: upCache,
         status: {
           ...initialState.status,
           isCached: true,
           isMocked: false,
           isFulfilled: true,
+        },
+      });
+    }
+  };
+
+  // cache mutation
+  const _update = (cb: (pre: S) => S) => {
+    if (state.data) {
+      const upCache = cb(state.data);
+      _updateCache(upCache);
+      setState({
+        data: upCache,
+        status: {
+          isFulfilled: true,
+          isPending: false,
+          isRejected: false,
+          isMocked: false,
+          isCached: false,
+          err: "",
         },
       });
     }
@@ -140,7 +156,10 @@ export const __useFetch = <
     }
 
     // call service
-    httpService?.(url, requireAccessToken, data, options)
+    httpService?.(url, requireAccessToken, data, {
+      ...options,
+      cancelToken: source.token,
+    })
       .then(({ data }: any) => {
         // Fulfilled state
         const FulfilledState = {
@@ -194,5 +213,12 @@ export const __useFetch = <
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...depends]);
 
-  return [state, service, cacheable ? _updateCache : undefined];
+  // cancel api request when component unmount
+  useEffect(() => {
+    return () => {
+      source.cancel();
+    };
+  }, []);
+
+  return [state, service, _update];
 };

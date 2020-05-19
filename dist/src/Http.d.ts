@@ -10,6 +10,7 @@ export default class Http {
     put: (url: string, token: string | null, data: any, options?: AxiosRequestConfig | undefined) => Promise<AxiosResponse<any>>;
     private absUrl;
     private getHeaders;
+    private handleCancel;
     private fetch;
     private fetchWithBody;
 }

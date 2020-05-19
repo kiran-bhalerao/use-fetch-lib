@@ -3,7 +3,7 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse,
   CancelTokenSource,
-  Method
+  Method,
 } from "axios";
 import { ICancelable } from "./types";
 
@@ -46,10 +46,15 @@ export default class Http {
     if (token)
       return {
         Authorization: token,
-        "Access-Control-Allow-Origin": "*"
+        "Access-Control-Allow-Origin": "*",
       };
 
     return {};
+  };
+
+  private handleCancel = () => {
+    console.log("Request canceled, @use-fetch-lib 🎉");
+    return (null as unknown) as Promise<AxiosResponse<any>>;
   };
 
   private fetch = (
@@ -62,12 +67,16 @@ export default class Http {
         ...options,
         headers: {
           ...this.getHeaders(token),
-          ...(typeof options.headers === "object" ? options.headers : {})
-        }
+          ...(typeof options.headers === "object" ? options.headers : {}),
+        },
       })
       .then((res: AxiosResponse) => res)
       .catch((err: AxiosError) => {
-        throw err;
+        if (axios.isCancel(err)) {
+          return this.handleCancel();
+        } else {
+          throw err;
+        }
       });
   };
 
@@ -85,23 +94,27 @@ export default class Http {
       ...options,
       headers: {
         ...this.getHeaders(token),
-        ...(typeof options.headers === "object" ? options.headers : {})
-      }
+        ...(typeof options.headers === "object" ? options.headers : {}),
+      },
     })
       .then((res: AxiosResponse) => res)
       .catch((err: AxiosError) => {
-        throw err;
+        if (axios.isCancel(err)) {
+          return this.handleCancel();
+        } else {
+          throw err;
+        }
       });
   };
 }
 
-Http.Cancelable = (function() {
+Http.Cancelable = (function () {
   let tokenSource: CancelTokenSource;
 
   return <T extends any>(func: Function): ICancelable<T> => {
     const originalFunc = func;
 
-    return function() {
+    return function () {
       const _args = [...arguments];
       if (_args.length > 4) {
         throw new Error("Wrong Number of arguments, Check Api class");
