@@ -5,9 +5,9 @@ import { IUseFetchContext, IUseFetchProvider } from "./types";
 const FetchContext = createContext<IUseFetchContext>({
   authorizationToken: "",
   HttpService: new Http(""),
-  doesProviderAdded: false,
+  isProviderAdded: false,
   cacheStore: {},
-  updateCache: () => {}
+  updateCache: () => {},
 });
 
 export const __useFetchContext = () => useContext(FetchContext);
@@ -26,23 +26,23 @@ export const __useFetchContext = () => useContext(FetchContext);
 export const __UseFetchProvider = (props: IUseFetchProvider) => {
   const { children, baseUrl, authorizationToken } = props;
   const HttpService = new Http(baseUrl);
-  const doesProviderAdded = true;
+  const isProviderAdded = true;
 
   // cache store
   const [cacheStore, _updateCache] = useState<Record<string, any>>({});
 
   // cache updater
   const updateCache = (key: string, cache: Record<string, any>) =>
-    _updateCache(pre => ({ ...pre, [key]: cache }));
+    _updateCache((pre) => ({ ...pre, [key]: cache }));
 
   return (
     <FetchContext.Provider
       value={{
         authorizationToken,
         HttpService,
-        doesProviderAdded,
+        isProviderAdded,
         cacheStore,
-        updateCache
+        updateCache,
       }}
     >
       {children}

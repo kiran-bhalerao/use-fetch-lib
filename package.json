@@ -1,6 +1,6 @@
 {
   "name": "use-fetch-lib",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A simple React Hook that make rest api call easier.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -35,6 +35,6 @@
     "typescript": "^3.7.2"
   },
   "peerDependencies": {
-    "react": "^16.11.0"
+    "react": "16.*"
   }
 }
