@@ -16,4 +16,4 @@ import { IUseFetchProps, IUseFetchReturn } from "./types";
  * @param  {object} [options={}] - (optional) The config options of Axios.js (https://goo.gl/UPLqaK)
  * @param @deprecated {string} [serviceName=unknown] - (optional) You can pass name to your service
  */
-export declare const __useFetch: <S extends Record<string, any>, P extends Record<string, any> = any>(props: string | IUseFetchProps<S>) => IUseFetchReturn<S, P>;
+export declare const __useFetch: <S extends Record<string, any>, P extends Record<string, any> = any, E extends Record<string, any> = S>(props: string | IUseFetchProps<S, E>) => IUseFetchReturn<E, P>;

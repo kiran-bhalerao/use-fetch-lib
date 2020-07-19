@@ -12,13 +12,15 @@ $ npm i use-fetch-lib --save
 $ yarn add use-fetch-lib
 ```
 
-## It features:
+![Alt text](./src/code.png "Title")
+
+## ✨ It features:
 
 - Simple and Lightweight
 - TypeScript ready
 - Support Data Mocking
 - SSR support
-- Request Cancellation on component unmount 🎉
+- Request Cancellation on component unmount
 - Request Caching (In-Memory cache)
 - Local/Cache state mutation (update your data as you want)
 
@@ -94,9 +96,10 @@ const [{ data, status }, recall] = useFetch("/api/v1/employee/1"); // note: Defa
 | method             | string                   | get     | optional | The request method `'get', 'delete', 'post', 'put'`                                                                |
 | mockData           | {}                       |         | optional | This is default data for typescript types and api mocking                                                          |
 | shouldDispatch     | () => boolean or boolean | false   | optional | The conditions for auto run the service(on `componentDidMount`)                                                    |
-| cancelable         | boolean                  | false   | optional | Should cancel previous request..                                                                                   |
+| cancelable         | boolean                  | false   | optional | Should cancel Api request on Component unmount                                                                     |
 | shouldUseAuthToken | boolean                  | true    | optional | if it is true it will send your authorizationToken with the request                                                |
 | dependencies       | Array<any>               | true    | optional | This is dependencies array, if any of dependency get update them the service will re-call(on `componentDidUpdate`) |
-| before             | () => void               |         | optional | This function will trigger when the api call triggers                                                              |
+| before             | () => void               |         | optional | This function will trigger before the api call triggers                                                            |
+| after              | (state) => void          |         | optional | This function will trigger after the Api call                                                                      |
+| alter              | (state) => newState      |         | optional | With this function you can alter the api response as you want                                                      |
 | options            | {}                       |         | optional | The config options of Axios.js (https://goo.gl/UPLqaK)                                                             |
-| serviceName        | string                   | unknown | optional | You can pass name to your service                                                                                  |

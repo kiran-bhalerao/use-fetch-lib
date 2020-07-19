@@ -27,10 +27,11 @@ import { errorMessage, getAccessToken } from "./utilities";
  */
 export const __useFetch = <
   S extends Record<string, any>,
-  P extends Record<string, any> = any
+  P extends Record<string, any> = any,
+  E extends Record<string, any> = S
 >(
-  props: IUseFetchProps<S> | string
-): IUseFetchReturn<S, P> => {
+  props: IUseFetchProps<S, E> | string
+): IUseFetchReturn<E, P> => {
   // props string check
   if (typeof props === "string") {
     props = { url: props };
@@ -47,6 +48,7 @@ export const __useFetch = <
     dependencies = undefined,
     before = () => {},
     after = () => {},
+    alter,
     options = {},
   } = props;
 
@@ -90,9 +92,9 @@ export const __useFetch = <
   };
 
   // create store
-  const [state, setState] = useState<IUseFetchInitialState<S>>(initialState);
+  const [state, setState] = useState<IUseFetchInitialState<E>>(initialState);
 
-  const _updateCache = (upCache: S) => {
+  const _updateCache = (upCache: E) => {
     if (cacheable) {
       updateCache(url, {
         data: upCache,
@@ -107,7 +109,7 @@ export const __useFetch = <
   };
 
   // cache mutation
-  const _update = (cb: (pre: S) => S) => {
+  const _update = (cb: (pre: E) => E) => {
     if (state.data) {
       const upCache = cb(state.data);
       _updateCache(upCache);
@@ -144,7 +146,7 @@ export const __useFetch = <
 
     // get cache
     if (cacheable) {
-      let CachedState: IUseFetchInitialState<S> = cacheStore[url];
+      let CachedState: IUseFetchInitialState<E> = cacheStore[url];
 
       if (CachedState) {
         CachedState = {
@@ -167,9 +169,15 @@ export const __useFetch = <
       cancelToken: source.token,
     })
       .then(({ data }: any) => {
+        /** Alter the data */
+        let altered: E = data;
+        if (typeof alter === "function") {
+          altered = alter(data);
+        }
+
         // Fulfilled state
         const FulfilledState = {
-          data,
+          data: altered,
           status: {
             isFulfilled: true,
             isPending: false,
