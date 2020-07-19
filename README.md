@@ -14,14 +14,13 @@ $ yarn add use-fetch-lib
 
 ## It features:
 
-- Simple and Lightweight (gzipped 1.4k)
+- Simple and Lightweight
 - TypeScript ready
-- Support Data Mocking (Fake Api call)
+- Support Data Mocking
 - SSR support
-- Request Cancellation 🎉
+- Request Cancellation on component unmount 🎉
 - Request Caching (In-Memory cache)
 - Local/Cache state mutation (update your data as you want)
-- Auto req. cancellation on component unmount
 
 ## How to use
 
@@ -98,6 +97,6 @@ const [{ data, status }, recall] = useFetch("/api/v1/employee/1"); // note: Defa
 | cancelable         | boolean                  | false   | optional | Should cancel previous request..                                                                                   |
 | shouldUseAuthToken | boolean                  | true    | optional | if it is true it will send your authorizationToken with the request                                                |
 | dependencies       | Array<any>               | true    | optional | This is dependencies array, if any of dependency get update them the service will re-call(on `componentDidUpdate`) |
-| beforeServiceCall  | () => void               |         | optional | This function will trigger when the api call triggers                                                              |
+| before             | () => void               |         | optional | This function will trigger when the api call triggers                                                              |
 | options            | {}                       |         | optional | The config options of Axios.js (https://goo.gl/UPLqaK)                                                             |
 | serviceName        | string                   | unknown | optional | You can pass name to your service                                                                                  |

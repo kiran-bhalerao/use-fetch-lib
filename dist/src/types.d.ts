@@ -23,9 +23,9 @@ export interface IUseFetchProps<S> {
     dependencies?: any[];
     mockData?: S;
     shouldUseAuthToken?: boolean;
-    beforeServiceCall?: () => void;
+    before?: () => void;
+    after?: (state: IUseFetchInitialState<S>) => void;
     options?: AxiosRequestConfig;
-    name?: string;
 }
 export declare type IUseFetchReturn<S extends Record<string, any>, P extends Record<string, any>> = [{
     data: S | undefined;

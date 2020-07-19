@@ -1,4 +1,4 @@
-import { AxiosRequestConfig, AxiosResponse } from "axios";
+import { AxiosRequestConfig } from "axios";
 import { ReactNode } from "react";
 import Http from "./Http";
 
@@ -27,9 +27,9 @@ export interface IUseFetchProps<S> {
   dependencies?: any[];
   mockData?: S;
   shouldUseAuthToken?: boolean;
-  beforeServiceCall?: () => void;
+  before?: () => void;
+  after?: (state: IUseFetchInitialState<S>) => void;
   options?: AxiosRequestConfig;
-  name?: string;
 }
 
 export type IUseFetchReturn<
@@ -54,10 +54,3 @@ export interface IUseFetchProvider
   baseUrl: string;
   children: ReactNode;
 }
-
-export type ICancelable<T extends any> = (
-  url: string,
-  token: string | null,
-  _data?: any,
-  options?: AxiosRequestConfig
-) => Promise<AxiosResponse<T>>;
