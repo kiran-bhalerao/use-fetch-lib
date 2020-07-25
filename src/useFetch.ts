@@ -22,8 +22,9 @@ import { errorMessage, getAccessToken } from "./utilities";
  * @param  {boolean} [shouldUseAuthToken] - (optional, default true) if it is true it will send your authorizationToken with the request.
  * @param  {Array<any>} [dependencies] - (optional) This is dependencies array, if any of dependency get update them the service will re-call(on componentDidUpdate, or `[dependencies]` hooks way)
  * @param  {() => void} [before] - (optional) This function will trigger when the api call trigger
+ * @param  {() => void} [after] - (optional) This function will trigger after the api gets called with response data
+ * @param  {() => void} [alter] - (optional) with this function u can change response data shape as u want
  * @param  {object} [options={}] - (optional) The config options of Axios.js (https://goo.gl/UPLqaK)
- * @param @deprecated {string} [serviceName=unknown] - (optional) You can pass name to your service
  */
 export const __useFetch = <
   S extends Record<string, any>,
