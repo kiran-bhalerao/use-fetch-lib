@@ -9,6 +9,7 @@ export declare const __useFetchContext: () => IUseFetchContext;
  * UseFetchProvider Params 👇
  * @param  {string} baseUrl - your api host name Ex. https://your-api.com without the last Forward slash
  * @param  {() => string|string} authorizationToken - your client JWT token Ex. `bearer eyJ0eX...`
+ * @param  { Record<string, any>} [options={}] defaultHeaders - set request header for all requests.
  *
  * Thats it .. 🔥
  */

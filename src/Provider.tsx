@@ -20,12 +20,13 @@ export const __useFetchContext = () => useContext(FetchContext);
  * UseFetchProvider Params 👇
  * @param  {string} baseUrl - your api host name Ex. https://your-api.com without the last Forward slash
  * @param  {() => string|string} authorizationToken - your client JWT token Ex. `bearer eyJ0eX...`
+ * @param  { Record<string, any>} [options={}] defaultHeaders - set request header for all requests.
  *
  * Thats it .. 🔥
  */
 export const __UseFetchProvider = (props: IUseFetchProvider) => {
-  const { children, baseUrl, authorizationToken } = props;
-  const HttpService = new Http(baseUrl);
+  const { children, baseUrl, defaultHeaders = {}, authorizationToken } = props;
+  const HttpService = new Http(baseUrl, defaultHeaders);
   const isProviderAdded = true;
 
   // cache store

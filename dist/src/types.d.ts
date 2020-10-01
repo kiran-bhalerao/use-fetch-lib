@@ -45,6 +45,7 @@ export interface IUseFetchContext {
 }
 export interface IUseFetchProvider extends Pick<IUseFetchContext, "authorizationToken"> {
     baseUrl: string;
+    defaultHeaders?: Record<string, any>;
     children: ReactNode;
 }
 export {};

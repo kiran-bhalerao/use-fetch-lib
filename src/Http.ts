@@ -6,7 +6,11 @@ import axios, {
 } from "axios";
 
 export default class Http {
-  constructor(private baseUrl: string) {}
+  defaultHeaders = {};
+
+  constructor(private baseUrl: string, defaultHeaders?: Record<string, any>) {
+    this.defaultHeaders = defaultHeaders || {};
+  }
 
   public get = (
     url: string,
@@ -44,9 +48,10 @@ export default class Http {
       return {
         Authorization: token,
         "Access-Control-Allow-Origin": "*",
+        ...this.defaultHeaders,
       };
 
-    return {};
+    return this.defaultHeaders;
   };
 
   private handleCancel = () => {
